@@ -30,12 +30,13 @@ void consume_pipe(va_list args) {
     }
 }
 
-void piping(va_list args) {
-    char *piping_type = va_arg(args, char*);
+void piping(char *piping_type) {
     int fd[2];
     int fd2[2];
     pipe(fd);
     pipe(fd2);
+
+    start_mesure();
 
     int rc = fork();
 
@@ -92,22 +93,23 @@ void piping(va_list args) {
         } else {
             int wc = wait(NULL);
             printf("from parent\n");
+            printf("time taken: %f\n", end_mesure());
         }
     }
 }
 
 int main(int argc, char *argv[]) {
-    /* printf("no-context-switch total cost: %f\n", measure(piping, "no_context_switch")); */
-    printf("with-context-switch total cost: %f\n", measure(piping, "with_context_switch"));
+    piping("no_context_switch");
+    /* piping("with_context_switch"); */
     return 0;
 }
-// Note: This will print 3 `total cost` to the console (instead of one),
-// the reason is that after piping is called, it forks 2 children
-// each children runs its own version of what's after the calls
+// Note: We can't use measure() function directly here
+// since piping will fork 2 children
+// each child runs its own version of what's after the calls to fork
 // including everything after piping is called inside measure
-// which includes the printf statement of total cost
-// I don't know how to fix it yet
-// But I can still use the final result for my calculation
+// so we need to use start_mesure() & end_mesure()
+// start_mesure() before forking
+// end_mesure() inside parent process after all children terminate
 
 // Result:
 // no-context-switch cost: 2.09 * 10^ 5 microseconds

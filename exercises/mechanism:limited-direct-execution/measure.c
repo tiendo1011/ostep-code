@@ -25,18 +25,27 @@ void repeat(void (*f)(), ...) {
     va_end(args);
 }
 
-double measure(void (*f)(), ...) {
+struct Intervals {
     struct timeval start_time;
     struct timeval end_time;
+} interval;
 
-    gettimeofday(&start_time, NULL);
+void start_mesure() {
+    gettimeofday(&interval.start_time, NULL);
+}
+
+double end_mesure() {
+    gettimeofday(&interval.end_time, NULL);
+    return (tv_to_microseconds(interval.end_time) - tv_to_microseconds(interval.start_time)) / REPEAT;
+}
+
+double measure(void (*f)(), ...) {
+    start_mesure();
 
     va_list args;
     va_start(args, f);
     (*f)(args);
     va_end(args);
 
-    gettimeofday(&end_time, NULL);
-
-    return (tv_to_microseconds(end_time) - tv_to_microseconds(start_time)) / REPEAT;
+    return end_mesure();
 };
