@@ -37,6 +37,13 @@ main(int argc, char *argv[])
 // => The file is override only when another process re-open the file
 // so when you open a file, you decide if you wanna override it, or append to it
 //
+// The reason is because parent & child share the same file descriptor
+// so when child write to it, the offset of the file descriptor changes
+// and the parent won't override when writing
+// another process will open a file with a different file descriptor (with different offset)
+// hence it might override
+// open with append mode simply make the offset start with the end byte location, instead of 0
+//
 // so file descriptor is sharable
 // this makes sense since lot's of processes sharing the same
 // stdin, stdout, stderr
